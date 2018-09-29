@@ -31,14 +31,14 @@ addpath(genpath('../code/needs/'))
 
 %==========mixture model data generation ===============
     %datatype = MM type to generate data from: 1=GGM, 2=GGM, 3=GIM  
-        datatype=2;   
+        datatype=3;   
     % N = number of samples
-        N=131072;                
+        N=10000;                
     %Parameters of each component (means us and variances vs)
         u1=0;v1=1; u2=4;v2=1; u3 =4; v3=1; %u3 will be multiplied for -1!!
         params=[u1 v1 u2 v2 u3 v3];
     %Mixing proportions
-        mix=[.9 .05 0.05];
+        mix=[.8 .1 .1];
     %proportion per component of mix mod
         N2=round(N.*mix);
     %actual data generation
@@ -54,9 +54,8 @@ addpath(genpath('../code/needs/'))
 
  %========== MODEL FIT=============== 
     if options.initialization=='givens'
-        ms=[mean(data) mean(data)+2*std(data) -(mean(data)+2*std(data))]';
-        %ms=[0 3 -3];vs=[1 1 1];%ms=[0 2 -2]'; 
-        vs=[1 2 2]';
+        %ms=[mean(data) mean(data)+2*std(data) -(mean(data)+2*std(data))]';
+        ms=[0 3 -3]';vs=[1 1 1]';%ms=[0 2 -2]';         vs=[1 2 2]';
         options.MLinit=[ms vs]; 
         if options.K==3
         else
@@ -72,3 +71,32 @@ addpath(genpath('../code/needs/'))
 %========== MODEL FIT===============      
 
 
+
+
+%========== Visualization===============      
+figure(1);clf        
+[f,x]=hist(data,50);
+bar(x,f/trapz(x,f));
+hold on
+invgam=@(x,a,b) b^a/gamma(a).*(1./x).^(a+1).*exp(-b./x);
+rage=-10:.001:10;
+pos=find(rage>0);neg=find(rage<0);
+if options.MM=='GIM'
+    plt1=invgam(rage,src.shapes(1),src.scales(1));plt1(neg)=0;
+    plt2=invgam(-rage, src.shapes(2),src.scales(2)   );plt2(pos)=0;
+   title('GIM FIT')
+else
+   plt1=gampdf(rage,src.shapes(1),1/src.rates(1));plt1(neg)=0;
+    plt2=gampdf(-rage,src.shapes(2),1/src.rates(2));plt2(pos)=0; 
+    title('GGM FIT')
+end
+plot(rage,src.pi(1).*normpdf(rage,src.mu1,sqrt(1/src.tau1)),'r');hold on
+plot(rage,src.pi(2).*plt1,'r');hold on
+plot(rage,src.pi(3).*plt2,'r');hold on
+        plot(rage,src.pi(1).*normpdf(rage,src.mu1,sqrt(1/src.tau1))+src.pi(2).*plt1 +src.pi(3).*plt2 ,'g');hold on
+
+ylim=max(f/trapz(x,f));
+set(gca,'ylim',[0 ylim])
+axis tight
+          
+%========== Visualization===============      
