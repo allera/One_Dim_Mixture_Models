@@ -4,6 +4,20 @@ Created on Fri Feb 24 14:03:13 2017
 
 @author: allera
 """
+
+#---------
+
+import os 
+import sys
+
+#Modify next line to add the toolbox to path
+toolbox_path = "../code" 
+
+sys.path.append(os.path.join(os.path.abspath(toolbox_path))) 
+
+#--------
+
+
 #Example script to launch fit 1 dimensional mixture model. 
 Inference = 'Method of moments'# OR 'Maximum Likelihood' OR 'Variational Bayes' ML NOT INCLUDED YET
 Inference ='Variational Bayes'
@@ -27,7 +41,7 @@ opts={'Inference':Inference,'Number_of_Components':Number_of_Components,'Compone
 generate_new_data=1
 if generate_new_data==1:
     from generate_data_vector2 import generate_data_vector
-    data_vector=generate_data_vector(3, 50000, [0,3,-3], [1,1,1], [0.8, 0.1, 0.1])
+    data_vector=generate_data_vector(3, 50000, [0,5,-5], [1,1,1], [0.8, 0.1, 0.1])
 #    import scipy.io as sio
 #    sio.savemat('data_vector.mat', {'data_vector':data_vector})
 else:
@@ -37,8 +51,8 @@ Model = Mixture_Model_1Dim(data_vector, opts)
 
 
 import matplotlib.pyplot as plt
-plt.plot(Model['Likelihood']);plt.show()
-plt.plot(Model['FEs']);plt.show()
+#plt.plot(Model['Likelihood']);plt.show()
+#plt.plot(Model['FEs']);plt.show()
 print Model['Mixing Prop.']
 
 #def plot_fit(data_vector,opts,Model):
