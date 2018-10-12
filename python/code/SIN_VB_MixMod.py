@@ -202,6 +202,7 @@ def my_gammas(data,opts,Posterior):
 
 
 def update_lambda(K,lambda_0,gamma_sum,Posterior,gammas):
+            gamma_sum=gamma_sum[range(K)]
             lambdaq = lambda_0+gamma_sum
             Posterior['lambda']=lambdaq   
             # from choud  
