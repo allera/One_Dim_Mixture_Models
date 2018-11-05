@@ -1,0 +1,194 @@
+function [output]=mmbetas(data,number_of_components,graphical)%,opts)%K,init,mmtype,tol,MaxIts,PriorPi,true_comp)
+model=1; %model =2 is ml but it does not work when init far from true....
+k=number_of_components;
+plot_progress=graphical;
+if plot_progress==1
+    figure(100);clf
+    plt_range=0:1/1000:1;
+    [f, y] = hist(data,30);
+    bar(y, f / trapz(y, f),'FaceColor',[0 .5 .5],'EdgeColor',[0 .9 .9],'LineWidth',1.5); hold on
+    title('data histogram')
+    pause(1)
+end
+
+if model==1
+    method_of_moment=1;
+    max_lik=0;
+elseif model==2
+    method_of_moment=0;
+    max_lik=1;
+end
+
+tol=10^-10;
+MaxIts=500;
+
+%define method of moments and max likelihood necesary functions
+%MM for beta
+%m=mean(x);
+%s=std(x)^2;
+a_MM=@(m,s)m*((m*(1-m)/s) -1);
+b_MM=@(m,s)(1-m)*((m*(1-m)/s)-1) ;
+% ML for the beta
+g1=@(a,b,x) psi(a) - psi(a+b) - mean(log(x));
+g2=@(a,b,x) psi(b) - psi(a+b) - mean(log(1-x));
+dg1a=@(a,b) psi(1,a) - psi(1,a+b);
+dg1b=@(a,b) - psi(1,a+b);
+dg2a=@(a,b) - psi(1,a+b);
+dg2b=@(a,b) psi(1,b) - psi(1,a+b);
+g=@(a,b,x)[g1(a,b,x); g2(a,b,x)];
+G=@(a,b)[dg1a(a,b) dg1b(a,b); dg2a(a,b) dg2b(a,b)];
+
+
+
+% m=mean(data);
+% s=std(data)^2;
+% theta=[a_MM(m,s); b_MM(m,s)];
+% flag=0;
+% while flag==0
+%     theta_old=theta;
+%     theta=theta-(inv(G(theta(1), theta(2))) * g(theta(1),theta(2),data))
+% end
+
+
+
+%init parameters
+init_PI=ones(1,k)/k;
+tmpPI=init_PI;
+s=init_PI(1);
+centers=cumsum(tmpPI)-(tmpPI/2);
+estimated_parameters=[];
+for i=1:k
+    params{i}=[a_MM(centers(i),0.01) b_MM(centers(i),0.01)];
+    estimated_parameters=[estimated_parameters;params{i}];
+end
+%params{1}=[1 5];params{2}=[5 1];
+%estimated_parameters=[params{1};params{2}];
+
+if plot_progress==1
+    figure(100);clf
+    plt_range=0:1/1000:1;
+    [f, y] = hist(data,30);
+    bar(y, f / trapz(y, f),'FaceColor',[0 .5 .5],'EdgeColor',[0 .9 .9],'LineWidth',1.5); hold on
+    for i=1:k
+        plot(plt_range,tmpPI(i)*betapdf(plt_range,estimated_parameters(i,1),estimated_parameters(i,2)), 'r--','Linewidth',1);
+    end    
+    mix_pdf=tmpPI(1)*betapdf(plt_range,estimated_parameters(1,1),estimated_parameters(1,2));
+    for i=2:k
+       mix_pdf=mix_pdf+ tmpPI(i)*betapdf(plt_range,estimated_parameters(i,1),estimated_parameters(i,2));
+    end
+    plot(plt_range,mix_pdf, 'r','Linewidth',2);
+    pause(1)
+end
+
+%first iteration
+allparam(1,:,:)=estimated_parameters;%[params{1};params{2}];
+allPi(1,:)=tmpPI;
+for comp=1:k
+    [prob]= betapdf(data,estimated_parameters(comp,1),estimated_parameters(comp,2)); 
+    prob=prob*tmpPI(comp);
+    probs(comp,:)=prob;
+end
+probs(probs<10^-14)=eps;
+GenResp= probs./repmat(sum(probs),k,1);
+GenResp (find(isnan(GenResp)))=10^-14;
+GenN=sum(GenResp,2);
+tmpPI=(GenN./sum(GenN))';%Gresp'/sum(Gresp');
+dum=log(repmat(tmpPI',1,size(probs,2)))+log(probs);
+Exp_likel(1)=sum( sum( GenResp.*dum   ));
+dum2=repmat(tmpPI',1,size(probs,2)).*probs;
+Real_likel(1)=sum(log(sum(dum2)));
+flag=0;
+it=2;
+
+while flag==0
+    %PERFORM UPDATES OF BETA PARAMETERS
+    for comp=1:k
+        %use repmat
+        if method_of_moment==1
+            stm(comp)=(sum(GenResp(comp,:).*data))/GenN(comp);%means update
+            stv(comp)=sum(GenResp(comp,:).*((data-stm(comp)).^2))/GenN(comp);%variances update
+            estimated_parameters(comp,1)=a_MM(stm(comp),stv(comp));
+            estimated_parameters(comp,2)=b_MM(stm(comp),stv(comp));
+        elseif max_lik==1  
+            theta=[estimated_parameters(comp,1); estimated_parameters(comp,2)];
+            ml_sub_flag=0;
+            ml_sub_its=0;
+            while ml_sub_flag==0
+                ml_sub_its=ml_sub_its+1;
+                theta_old=theta;
+                %theta2=theta-(inv(G(theta(1), theta(2))) * g(theta(1),theta(2),data))
+                %Resp=GenResp(comp,:);N=GenN(comp);
+                em_g1=@(a,b,x,Resp,N) psi(a) - psi(a+b) - (sum(Resp.*log(data)))/N;
+                em_g2=@(a,b,x,Resp,N) psi(b) - psi(a+b) - (sum(Resp.*log(1-data)))/N;
+                em_g=@(a,b,x,Resp,N)[em_g1(a,b,x,Resp,N); em_g2(a,b,x,Resp,N)];
+                theta=theta-(inv(G(theta(1), theta(2))) * em_g(theta(1),theta(2),data,GenResp(comp,:),GenN(comp)));
+                if norm(theta-theta_old)<10^-6
+                    ml_sub_flag=1;
+                end
+            end 
+            estimated_parameters(comp,1)=theta(1);
+            estimated_parameters(comp,2)=theta(2);
+        end
+    end
+    
+    if plot_progress==1
+        figure(100);clf
+        plt_range=0:1/1000:1;
+        [f, y] = hist(data,30);
+        bar(y, f / trapz(y, f),'FaceColor',[0 .5 .5],'EdgeColor',[0 .9 .9],'LineWidth',1.5); hold on
+        for i=1:k
+            plot(plt_range,tmpPI(i)*betapdf(plt_range,estimated_parameters(i,1),estimated_parameters(i,2)), 'r--','Linewidth',1);
+        end   
+        
+        mix_pdf=tmpPI(1)*betapdf(plt_range,estimated_parameters(1,1),estimated_parameters(1,2));
+        for i=2:k
+           mix_pdf=mix_pdf+ tmpPI(i)*betapdf(plt_range,estimated_parameters(i,1),estimated_parameters(i,2));
+        end
+        plot(plt_range,mix_pdf, 'r','Linewidth',2);
+        pause(1)
+    end
+
+    for comp=1:k
+        [prob]= betapdf(data,estimated_parameters(comp,1),estimated_parameters(comp,2)); 
+        unwprobs(comp,:)=prob;
+         prob=prob*tmpPI(comp);
+         prob(find(isnan(prob)))=10^-16;
+        probs(comp,:)=prob;
+    end
+
+    GenResp = probs./repmat(sum(probs),k,1);
+    GenResp(find(isnan(GenResp)))=10^-14;
+    GenN=sum(GenResp,2);
+    tmpPI=GenN./sum(GenN);
+    dum=log(repmat(tmpPI,1,size(probs,2)))+log(probs);
+    dum(dum==-Inf)=10^-14;
+    dum(dum==Inf)=10^-14;
+    Exp_likel(it)=sum( sum( GenResp.*dum   ));
+    dum2=repmat(tmpPI,1,size(probs,2)).*probs;
+    Real_likel(it)=sum(log(sum(dum2)));
+    allparam(it,:,:)=estimated_parameters;
+    allPi(it,:)=tmpPI;
+    if it>2
+        err=abs(Real_likel(it-1)-Real_likel(it))/ abs(Real_likel(it-1)); 
+        if err<tol | it>MaxIts %|err2
+            flag=1;   
+        end
+    end
+    it=it+1;
+end
+cost=it;
+outparam=squeeze(allparam(end,:,:));
+outpi=squeeze(allPi(end,:));
+                
+output=[];
+output.beta_params=outparam;
+output.pi=outpi;
+output.Exp_likel=Exp_likel;
+output.Real_likel=Real_likel;
+output.cost=cost;
+output.resp =GenResp ;
+%output.probs=probs;
+%output. unwprobs =   unwprobs;     
+               
+end
+
