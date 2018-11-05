@@ -1,5 +1,11 @@
 %generate data from a beta mixture model and fit it
 clear
+
+%add code to path
+addpath(genpath('../code/MixMod/'))
+addpath(genpath('../code/needs/'))
+
+
 figure(1);clf
 N_total=10000; %total number of samples
 

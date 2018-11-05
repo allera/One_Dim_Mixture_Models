@@ -1,6 +1,10 @@
 %generate data from a beta mixture model and fit it
 clear
 
+%add code to path
+addpath(genpath('../code/MixMod/'))
+addpath(genpath('../code/needs/'))
+
 % parameters for generating synthetic data
 N_total=10000; %total number of samples
 mix=[.1 .9];  %mix proportions
