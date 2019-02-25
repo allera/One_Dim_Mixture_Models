@@ -17,7 +17,7 @@ sys.path.append(os.path.join(os.path.abspath(toolbox_path)))
 
 
 #Generate some data
-generate_new_data=1
+generate_new_data=0
 if generate_new_data==1:
     from generate_data_vector2 import generate_data_vector
     data_vector=generate_data_vector(3, 50000, [0,5,-5], [1,1,1], [0.8, 0.1, 0.1])
