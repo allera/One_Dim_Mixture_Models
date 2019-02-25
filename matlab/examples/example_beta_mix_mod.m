@@ -33,8 +33,8 @@ if 0  % fit mixture models of 2 beta distributions
 end
 
 if 1
-    graphical=0;
-    number_of_components=2;
+    graphical=1;
+    number_of_components=5;
     MM=mmbetas(data,number_of_components,graphical);
     estimated_parameters=MM.beta_params;
     estimatedPI=MM.pi;

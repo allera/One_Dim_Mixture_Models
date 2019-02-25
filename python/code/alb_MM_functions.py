@@ -27,10 +27,28 @@ def Mix_Mod_MethodOfMoments(x, opts={'Number_of_Components':3,'Components_Model'
             if (abs((Exp_lik[it]-Exp_lik[it-1])/Exp_lik[it-1] )< tol) | (it > maxiters-1):
                 flag=1
         it=it+1
+        
     #gather output
-    output_dict={'means':tmp_mu,'variances':tmp_v,'Mixing Prop.':tmp_PI,
+    tmp_a=np.zeros(K) #it will remain zero for non-gamma or inv gamma distributions
+    tmp_b=np.zeros(K) #it will remain zero for non-gamma or inv gamma distributions  
+    tmp_c=np.zeros(K)
+    for k in range(K):
+        if opts['Components_Model'][k]=='Gamma': 
+            tmp_a[k] =alb.alphaGm(tmp_mu[k],tmp_v[k])
+            tmp_b[k] =alb.betaGm(tmp_mu[k],tmp_v[k])    
+        if opts['Components_Model'][k]=='-Gamma': 
+            tmp_a[k] =alb.alphaGm(-1*tmp_mu[k],tmp_v[k])
+            tmp_b[k] =alb.betaGm(-1*tmp_mu[k],tmp_v[k])     
+        if opts['Components_Model'][k]=='InvGamma': 
+            tmp_a[k] =alb.alphaIG(tmp_mu[k],tmp_v[k])
+            tmp_c[k] =alb.betaIG(tmp_mu[k],tmp_v[k])
+        if opts['Components_Model'][k]=='-InvGamma': 
+            tmp_a[k] =alb.alphaIG(-1*tmp_mu[k],tmp_v[k])
+            tmp_c[k] =alb.betaIG(-1*tmp_mu[k],tmp_v[k])
+            
+    output_dict={'means':tmp_mu,'variances':tmp_v,'Mixing Prop.':np.asarray(tmp_PI)[0],
                  'Likelihood':Exp_lik[0:it],'its':it,'Final responsibilities':resp,
-                 'opts':opts}
+                 'opts':opts,'shapes':tmp_a,'scales':tmp_c,'rates':np.divide(1.,tmp_b)}
 
     return output_dict 
 
