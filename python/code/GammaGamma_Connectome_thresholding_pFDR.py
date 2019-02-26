@@ -9,6 +9,7 @@ def GammaGamma_Connectome_thresholding_pFDR(input_file,toolbox_path):
     #Add the toolbox to path
     #toolbox_path = "/Users/alblle/allera_version_controlled_code/One_Dim_Mixture_Models/python/code"
     sys.path.append(os.path.join(os.path.abspath(toolbox_path))) 
+    from Mixture_Model_1Dim import Mixture_Model_1Dim     
 
     #load input conenctivity matrix 
     #input_file="/Users/alblle/Dropbox/POSTDOC/Demetrius/dmn_non_normalized.csv" 
@@ -25,20 +26,23 @@ def GammaGamma_Connectome_thresholding_pFDR(input_file,toolbox_path):
     Inference ='Variational Bayes'  #'Method of moments' OR 'Maximum Likelihood' OR 'Variational Bayes' ML NOT INCLUDED YET
     Number_of_Components=2
     Components_Model=['Gamma','Gamma']#,'-Gamma'] #Each component can be Gauss, Gamma, InvGamma, -Gamma, -InvGamma
-    tail=np.percentile(data_vector,99)
-    init_params=[1,2,tail,2]#,-5,2]
     maxits=500
     tol=0.00001
-    opts={'Inference':Inference,'Number_of_Components':Number_of_Components,'Components_Model':Components_Model,
+    good_model=0
+    percentiles=np.array([99,98.5,98,97.5,97,96.5,96,95.5,95])
+    percentile_idx=-1
+    while good_model==0:
+        percentile_idx=percentile_idx+1
+        tail=np.percentile(data_vector,percentiles[percentile_idx])
+        init_params=[1,2,tail,2]#,-5,2]
+        opts={'Inference':Inference,'Number_of_Components':Number_of_Components,'Components_Model':Components_Model,
                                             'init_params':init_params,'maxits':maxits,'tol':tol}
     #Define options for the mixture model fit
-
-
-    # CALL TO FIT MIXTURE MODEL
-    from Mixture_Model_1Dim import Mixture_Model_1Dim     
-    Model = Mixture_Model_1Dim(data_vector, opts)
-    #print Model['Mixing Prop.']
-    # CALL TO FIT MIXTURE MODEL
+        # CALL TO FIT MIXTURE MODEL
+        Model = Mixture_Model_1Dim(data_vector, opts)
+        if Model['Mixing Prop.'][0]<.95:
+            good_model=1
+        # CALL TO FIT MIXTURE MODEL
 
 
     if 0:
