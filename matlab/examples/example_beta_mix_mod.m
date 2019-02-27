@@ -8,7 +8,7 @@ addpath(genpath('../code/needs/'))
 % parameters for generating synthetic data
 N_total=10000; %total number of samples
 mix=[.1 .9];  %mix proportions
-a=1;b=5; %beta parameters of components 1 nad 2
+a=5;b=5; %beta parameters of components 1 nad 2
 a2=5;b2=1;
 
 

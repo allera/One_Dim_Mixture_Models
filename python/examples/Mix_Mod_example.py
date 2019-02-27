@@ -17,7 +17,7 @@ sys.path.append(os.path.join(os.path.abspath(toolbox_path)))
 
 
 #Generate some data
-generate_new_data=0
+generate_new_data=1
 if generate_new_data==1:
     from generate_data_vector2 import generate_data_vector
     data_vector=generate_data_vector(3, 50000, [0,5,-5], [1,1,1], [0.8, 0.1, 0.1])
@@ -28,7 +28,7 @@ else:
     
 
 #Define options for the mixture model fit
-Inference ='Variational Bayes'  #'Method of moments' OR 'Maximum Likelihood' OR 'Variational Bayes' ML NOT INCLUDED YET
+Inference ='Variational Bayes'#'Method of moments'#'Variational Bayes'  #'Method of moments' OR 'Maximum Likelihood' OR 'Variational Bayes' ML NOT INCLUDED YET
 Number_of_Components=3
 Components_Model=['Gauss','InvGamma','-InvGamma'] #Each component can be Gauss, Gamma, InvGamma, -Gamma, -InvGamma
 init_params=[0,1,5,2,-5,2]

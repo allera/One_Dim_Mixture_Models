@@ -36,15 +36,19 @@ def Mix_Mod_MethodOfMoments(x, opts={'Number_of_Components':3,'Components_Model'
         if opts['Components_Model'][k]=='Gamma': 
             tmp_a[k] =alb.alphaGm(tmp_mu[k],tmp_v[k])
             tmp_b[k] =alb.betaGm(tmp_mu[k],tmp_v[k])    
-        if opts['Components_Model'][k]=='-Gamma': 
+        elif opts['Components_Model'][k]=='-Gamma': 
             tmp_a[k] =alb.alphaGm(-1*tmp_mu[k],tmp_v[k])
             tmp_b[k] =alb.betaGm(-1*tmp_mu[k],tmp_v[k])     
-        if opts['Components_Model'][k]=='InvGamma': 
+        elif opts['Components_Model'][k]=='InvGamma': 
             tmp_a[k] =alb.alphaIG(tmp_mu[k],tmp_v[k])
             tmp_c[k] =alb.betaIG(tmp_mu[k],tmp_v[k])
-        if opts['Components_Model'][k]=='-InvGamma': 
+        elif opts['Components_Model'][k]=='-InvGamma': 
             tmp_a[k] =alb.alphaIG(-1*tmp_mu[k],tmp_v[k])
             tmp_c[k] =alb.betaIG(-1*tmp_mu[k],tmp_v[k])
+        elif opts['Components_Model'][k]=='Beta': 
+            tmp_a[k] =alb.a_beta_distr(tmp_mu[k],tmp_v[k])
+            tmp_c[k] =alb.b_beta_distr(tmp_mu[k],tmp_v[k])
+            
             
     output_dict={'means':tmp_mu,'variances':tmp_v,'Mixing Prop.':np.asarray(tmp_PI)[0],
                  'Likelihood':Exp_lik[0:it],'its':it,'Final responsibilities':resp,
@@ -98,6 +102,11 @@ def MM_E_step(x,K,opts,tmp_mu,tmp_v,tmp_PI,xpos,xneg):
             tmp_b[k] =alb.betaIG(-1*tmp_mu[k],tmp_v[k])
             PS[k,:]=alb.invgam(-1*x,tmp_a[k], tmp_b[k])
             PS[k,xpos]=0
+        if opts['Components_Model'][k]=='Beta': 
+            tmp_a[k] =alb.a_beta_distr(tmp_mu[k],tmp_v[k])
+            tmp_b[k] =alb.b_beta_distr(tmp_mu[k],tmp_v[k])
+            PS[k,:]=scipy.stats.beta.pdf(x,tmp_a[k], tmp_b[k])
+            
             
     PS[np.isnan(PS)] = 0; PS[np.isinf(PS)] = 0
     D=np.multiply(PS,np.matrix(tmp_PI).T) 
@@ -169,6 +178,19 @@ def alphaGm(mu,var):
 def betaGm(mu,var):
     aa=np.true_divide(var,mu);
     return aa
+
+#m=mean(x);
+#s=std(x)^2;
+#a_MM=@(m,s)m*((m*(1-m)/s) -1);
+#b_MM=@(m,s)(1-m)*((m*(1-m)/s)-1) ;
+
+def a_beta_distr(mm,ss):
+    a=np.multiply(mm,( np.divide(np.multiply(mm,(1-mm)),ss) -1))
+    return a
+
+def b_beta_distr(mm,ss):
+    b=np.multiply(1-mm,( np.divide(np.multiply(mm,(1-mm)),ss) -1))
+    return b
 
 def   invpsi(X): 
 # Inverse digamma (psi) function.  The digamma function is the derivative of the log gamma function.  
