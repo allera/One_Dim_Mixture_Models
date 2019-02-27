@@ -46,7 +46,7 @@ def GaussGammas_Connectome_thresholding_pFDR(input_file,toolbox_path):
 
 
     # Visualizar fit
-    visualize_model_fit=1
+    visualize_model_fit=0
     
     if visualize_model_fit==1:
         
@@ -109,7 +109,7 @@ def GaussGammas_Connectome_thresholding_pFDR(input_file,toolbox_path):
                 
             flag=1
             
-            print threshold1
+            #print threshold1
             
     #FDR at negative side
     sorted_data_vector=-np.sort(data_vector)
