@@ -34,6 +34,7 @@ from Connectome_thresholding_pFDR import GaussGammas_Connectome_thresholding_pFD
 t = time.time()
 threshold1, threshold2, Model = GaussGammas_Connectome_thresholding_pFDR(input_file,toolbox_path)
 elapsed = time.time() - t
+print elapsed
 
 1
 

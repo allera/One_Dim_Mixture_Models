@@ -33,7 +33,7 @@ def GaussGammas_Connectome_thresholding_pFDR(input_file,toolbox_path):
     Components_Model=['Gauss','InvGamma','-InvGamma']#,'-Gamma'] #Each component can be Gauss, Gamma, InvGamma, -Gamma, -InvGamma
     maxits=500
     tol=0.00001    
-    init_params=[1,2,5,2,-5,2]    
+    init_params=[0,2,6,2,-6,2]    
     #tail=np.percentile(data_vector,percentiles[percentile_idx])
     #init_params=[1,2,np.percentile(data_vector,99),2,np.percentile(data_vector,1),2]
     opts={'Inference':Inference,'Number_of_Components':Number_of_Components,'Components_Model':Components_Model,
