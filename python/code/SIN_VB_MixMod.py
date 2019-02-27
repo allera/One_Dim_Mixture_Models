@@ -101,7 +101,7 @@ def Mix_Mod_VB(x,opts):
     Posterior['Final responsibilities']=gammas;
     Posterior['Mixing Prop.']=np.true_divide(gammas.sum(0),gammas.sum()) #(sum(gammas,2)/sum(sum(gammas)))#';
     Posterior['mu1']=mean_mu1;
-    Posterior['tau1s']=mean_tau1;
+    Posterior['taus1']=mean_tau1;
     Posterior['shapes']=Posterior['shapes'];
     Posterior['ftot']=ftot;
     Posterior['FEs']=FEs;

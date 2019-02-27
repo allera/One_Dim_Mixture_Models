@@ -50,7 +50,7 @@ def Mix_Mod_MethodOfMoments(x, opts={'Number_of_Components':3,'Components_Model'
             tmp_c[k] =alb.b_beta_distr(tmp_mu[k],tmp_v[k])
             
             
-    output_dict={'means':tmp_mu,'variances':tmp_v,'Mixing Prop.':np.asarray(tmp_PI)[0],
+    output_dict={'means':tmp_mu,'mu1':tmp_mu,'variances':tmp_v,'taus1':np.divide(1,tmp_v),'Mixing Prop.':np.asarray(tmp_PI)[0],
                  'Likelihood':Exp_lik[0:it],'its':it,'Final responsibilities':resp,
                  'opts':opts,'shapes':tmp_a,'scales':tmp_c,'rates':np.divide(1.,tmp_b)}
 

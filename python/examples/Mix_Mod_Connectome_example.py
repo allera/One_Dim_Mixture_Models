@@ -17,7 +17,9 @@ sys.path.append(os.path.join(os.path.abspath(toolbox_path)))
 import os.path
 #load input conenctivity matrix 
 #input_file="/Users/alblle/Dropbox/POSTDOC/Demetrius/dmn_non_normalized.csv" 
-input_file="/Users/alblle/allera_version_controlled_code/One_Dim_Mixture_Models/python/examples/DMN_net.csv"
+#input_file="/Users/alblle/allera_version_controlled_code/One_Dim_Mixture_Models/python/examples/DMN_net.csv"
+input_file="/Users/alblle/allera_version_controlled_code/One_Dim_Mixture_Models/python/examples/raw_wij.csv"
+
 #input_file="/Users/alblle/allera_version_controlled_code/One_Dim_Mixture_Models/python/examples/ECN_R_net.csv"
 #a1=os.path.isfile(input_file)
 
@@ -27,8 +29,12 @@ input_file="/Users/alblle/allera_version_controlled_code/One_Dim_Mixture_Models/
 
 
 #from Connectome_thresholding_pFDR import GammaGamma_Connectome_thresholding_pFDR
+import time
 from Connectome_thresholding_pFDR import GaussGammas_Connectome_thresholding_pFDR
+t = time.time()
+threshold1, threshold2, Model = GaussGammas_Connectome_thresholding_pFDR(input_file,toolbox_path)
+elapsed = time.time() - t
 
-threshold=GaussGammas_Connectome_thresholding_pFDR(input_file,toolbox_path)
+1
 
 
