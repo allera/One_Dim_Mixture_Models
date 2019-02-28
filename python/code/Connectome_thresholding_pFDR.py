@@ -101,7 +101,7 @@ def GaussGammas_Connectome_thresholding_pFDR(input_file,toolbox_path):
         denominator=np.divide(float(k+1),float(rho))
         all_localFDR[k]=np.divide(numerator,denominator)
         pFDR=all_localFDR[k]
-        if pFDR>0.05:
+        if pFDR>0.025:
             if k==0:
                 threshold1=sorted_data_vector[k]
             else:
@@ -124,7 +124,7 @@ def GaussGammas_Connectome_thresholding_pFDR(input_file,toolbox_path):
         denominator=np.divide(float(k+1),float(rho))
         all_localFDR[k]=np.divide(numerator,denominator)
         pFDR=all_localFDR[k]
-        if pFDR>0.05:
+        if pFDR>0.025:
             if k==0:
                 threshold2=-sorted_data_vector[k]
             else:
