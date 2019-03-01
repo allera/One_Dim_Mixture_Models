@@ -24,7 +24,7 @@ def GaussGammas_Connectome_thresholding_pFDR(input_file,toolbox_path):
     
     #demean and divide for std to allow easy initialization
     mean_factor=np.mean(orig_data_vector)
-    scaling_factor=np.std(orig_data_vector)
+    scaling_factor=1.#np.std(orig_data_vector)
     data_vector=np.divide(orig_data_vector - mean_factor,scaling_factor)
 
     #Define options for the mixture model fit
@@ -33,9 +33,8 @@ def GaussGammas_Connectome_thresholding_pFDR(input_file,toolbox_path):
     Components_Model=['Gauss','InvGamma','-InvGamma']#,'-Gamma'] #Each component can be Gauss, Gamma, InvGamma, -Gamma, -InvGamma
     maxits=500
     tol=0.00001    
-    init_params=[0,2,6,2,-6,2]    
-    #tail=np.percentile(data_vector,percentiles[percentile_idx])
-    #init_params=[1,2,np.percentile(data_vector,99),2,np.percentile(data_vector,1),2]
+    init_params=[0,1,6,2,-6,2]    
+    init_params=[0,1,np.percentile(data_vector,99),2,np.percentile(data_vector,1),2]
     opts={'Inference':Inference,'Number_of_Components':Number_of_Components,'Components_Model':Components_Model,
                                             'init_params':init_params,'maxits':maxits,'tol':tol}
     # CALL TO FIT MIXTURE MODEL
@@ -46,7 +45,7 @@ def GaussGammas_Connectome_thresholding_pFDR(input_file,toolbox_path):
 
 
     # Visualizar fit
-    visualize_model_fit=0
+    visualize_model_fit=1
     
     if visualize_model_fit==1:
         
@@ -74,12 +73,15 @@ def GaussGammas_Connectome_thresholding_pFDR(input_file,toolbox_path):
 
 
         import matplotlib.pyplot as plt
+        fig = plt.figure()
+        #plt.plot(range(10))
         plt.hist(data_vector,bins=50,density=True,alpha=1, color='g')
         plt.plot(my_range,plt0, 'k', linewidth=2)
         plt.plot(my_range,plt1, 'k', linewidth=2)
         plt.plot(my_range,plt2, 'k', linewidth=2)
         plt.plot(my_range,plt0+plt1+plt2, 'r', linewidth=2)
-        plt.show()
+        fig.savefig(os.path.expanduser('~/Desktop/temp.png'), dpi=fig.dpi)
+        #plt.show()
         # Plot the resulting fit on a histogram of the data
         
         
@@ -101,7 +103,7 @@ def GaussGammas_Connectome_thresholding_pFDR(input_file,toolbox_path):
         denominator=np.divide(float(k+1),float(rho))
         all_localFDR[k]=np.divide(numerator,denominator)
         pFDR=all_localFDR[k]
-        if pFDR>0.025:
+        if pFDR>0.001:
             if k==0:
                 threshold1=sorted_data_vector[k]
             else:
@@ -124,7 +126,7 @@ def GaussGammas_Connectome_thresholding_pFDR(input_file,toolbox_path):
         denominator=np.divide(float(k+1),float(rho))
         all_localFDR[k]=np.divide(numerator,denominator)
         pFDR=all_localFDR[k]
-        if pFDR>0.025:
+        if pFDR>0.001:
             if k==0:
                 threshold2=-sorted_data_vector[k]
             else:

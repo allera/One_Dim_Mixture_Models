@@ -19,6 +19,7 @@ import os.path
 #input_file="/Users/alblle/Dropbox/POSTDOC/Demetrius/dmn_non_normalized.csv" 
 #input_file="/Users/alblle/allera_version_controlled_code/One_Dim_Mixture_Models/python/examples/DMN_net.csv"
 input_file="/Users/alblle/allera_version_controlled_code/One_Dim_Mixture_Models/python/examples/raw_wij.csv"
+input_file="/Users/alblle/Dropbox/POSTDOC/Demetrius/Hippocampal_net.csv" 
 
 #input_file="/Users/alblle/allera_version_controlled_code/One_Dim_Mixture_Models/python/examples/ECN_R_net.csv"
 #a1=os.path.isfile(input_file)
