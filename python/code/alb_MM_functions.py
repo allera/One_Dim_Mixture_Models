@@ -2,13 +2,13 @@
 import alb_MM_functions as alb
 import math
 from pylab import find, size  
-import numpy as np;
+import numpy as np
 import scipy.stats
 import warnings
 warnings.filterwarnings("ignore")
 
 def Mix_Mod_MethodOfMoments(x, opts={'Number_of_Components':3,'Components_Model':['Gauss','Gamma','-Gamma'],
-                    'init_params':[0,1,3,1,-3,1],'maxits':np.int(100),'tol':0.00001}): 
+                    'init_params':[0,1,3,1,-3,1],'maxits':np.int(100),'tol':0.00001,'init_pi':np.true_divide(np.ones(3),3)}): 
     
     tmp_mu,tmp_v,maxiters,tol,K,tmp_PI,Exp_lik = init_MM(x,opts)
     #indexes of samples to assign 0 prob wrt each positive definite distr.
@@ -67,7 +67,11 @@ def init_MM(x,opts):
     for k in range(K):
         tmp_mu[k]=all_params[np.int(2*k)]
         tmp_v[k]=all_params[np.int((2*k)+1)]
-    tmp_PI=np.true_divide(np.ones(K),K)        
+        
+    tmp_PI=opts['init_pi']
+    #tmp_PI=np.true_divide(np.ones(K),K)  
+
+      
     Exp_lik=np.zeros(maxiters+1)
     
     return tmp_mu,tmp_v,maxiters,tol,K,tmp_PI,Exp_lik

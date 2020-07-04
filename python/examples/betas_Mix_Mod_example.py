@@ -46,10 +46,13 @@ init_params=0.01*(np.ones(2*Number_of_Components))
 for k in range(Number_of_Components):
     init_params[2*k]=init_means[k]
     
+init_pi=np.ones(Number_of_Components);
+init_pi=np.divide(init_pi,Number_of_Components)
+    
 maxits=300
 tol=0.00000001
 opts={'Inference':Inference,'Number_of_Components':Number_of_Components,'Components_Model':Components_Model,
-                                        'init_params':init_params,'maxits':maxits,'tol':tol}
+                                        'init_params':init_params,'maxits':maxits,'tol':tol,'init_pi':init_pi}
 #Define options for the mixture model fit
 
 

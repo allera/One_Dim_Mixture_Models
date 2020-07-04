@@ -12,6 +12,7 @@ Created on Tue Apr 23 21:17:25 2019
 #Add the toolbox to path
 import os 
 import sys
+import numpy as np
 toolbox_path = "../code" 
 sys.path.append(os.path.join(os.path.abspath(toolbox_path))) 
 #Add the toolbox to path
@@ -33,10 +34,12 @@ Inference ='Variational Bayes'#'Method of moments'#'Variational Bayes'  #'Method
 Number_of_Components=2
 Components_Model=['Gamma','Gamma'] #Each component can be Gauss, Gamma, InvGamma, -Gamma, -InvGamma
 init_params=[1,2,5,2]
+init_pi=np.ones(2);
+init_pi=np.divide(init_pi,2)
 maxits=300
 tol=0.00000001
 opts={'Inference':Inference,'Number_of_Components':Number_of_Components,'Components_Model':Components_Model,
-                                        'init_params':init_params,'maxits':maxits,'tol':tol}
+                                        'init_params':init_params,'maxits':maxits,'tol':tol,'init_pi':init_pi}
 #Define options for the mixture model fit
 
 

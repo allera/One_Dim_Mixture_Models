@@ -11,6 +11,7 @@ Created on Fri Feb 24 14:03:13 2017
 #Add the toolbox to path
 import os 
 import sys
+import numpy as np
 toolbox_path = "../code" 
 sys.path.append(os.path.join(os.path.abspath(toolbox_path))) 
 #Add the toolbox to path
@@ -28,21 +29,24 @@ else:
     
 
 #Define options for the mixture model fit
-Inference ='Variational Bayes'#'Method of moments'#'Variational Bayes'  #'Method of moments' OR 'Maximum Likelihood' OR 'Variational Bayes' ML NOT INCLUDED YET
+Inference ='Method of moments'#'Variational Bayes'#'Method of moments'#'Variational Bayes'  #'Method of moments' OR 'Maximum Likelihood' OR 'Variational Bayes' ML NOT INCLUDED YET
 Number_of_Components=3
 Components_Model=['Gauss','InvGamma','-InvGamma'] #Each component can be Gauss, Gamma, InvGamma, -Gamma, -InvGamma
 init_params=[0,1,5,2,-5,2]
+init_pi=np.ones(3);
+init_pi=np.divide(init_pi,3)
+#init_pi[0]=0.9;init_pi[1]=0.05;init_pi[2]=0.05
 maxits=300
 tol=0.00000001
 opts={'Inference':Inference,'Number_of_Components':Number_of_Components,'Components_Model':Components_Model,
-                                        'init_params':init_params,'maxits':maxits,'tol':tol}
+                                        'init_params':init_params,'maxits':maxits,'tol':tol,'init_pi':init_pi}
 #Define options for the mixture model fit
 
 
 # CALL TO FIT MIXTURE MODEL
 from Mixture_Model_1Dim import Mixture_Model_1Dim     
 Model = Mixture_Model_1Dim(data_vector, opts)
-print Model['Mixing Prop.']
+#print Model['Mixing Prop.']
 # CALL TO FIT MIXTURE MODEL
 
 
@@ -55,7 +59,7 @@ from scipy.stats import norm
 
 my_range=np.linspace(-10,10,10000)
 
-plt0=np.multiply( Model['Mixing Prop.'][0],norm.pdf(my_range,Model['mu1'][0],np.sqrt(np.divide(1,Model['tau1s'][0]))  ) )
+plt0=np.multiply( Model['Mixing Prop.'][0],norm.pdf(my_range,Model['mu1'][0],np.sqrt(np.divide(1,Model['taus1'][0]))  ) )
 
 if Components_Model[1]=='InvGamma':
     plt1=np.multiply( Model['Mixing Prop.'][1],invgam(my_range,Model['shapes'][1],Model['scales'][1]))
@@ -79,6 +83,10 @@ plt.plot(my_range,plt1, 'k', linewidth=2)
 plt.plot(my_range,plt2, 'k', linewidth=2)
 plt.plot(my_range,plt0+plt1+plt2, 'r', linewidth=2)
 plt.show()
+
+
+
+
 
 # Plot the resulting fit on a histogram of the data
 

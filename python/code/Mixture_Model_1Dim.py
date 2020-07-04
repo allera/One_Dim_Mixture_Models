@@ -6,10 +6,11 @@ Created on Wed Feb  7 12:30:57 2018
 """
 from alb_MM_functions import Mix_Mod_MethodOfMoments
 from SIN_VB_MixMod import Mix_Mod_VB
+import numpy as np
 
 def Mixture_Model_1Dim(data_vector, opts={'Inference':'Method of moments',
                                         'Number_of_Components':3,'Components_Model':['Gauss','Gamma','-Gamma'],
-                                        'init_params':[0,1,3,1,-3,1],'maxits':100,'tol':0.00001}):
+                                        'init_params':[0,1,3,1,-3,1],'maxits':100,'tol':0.00001,'init_pi':np.true_divide(np.ones(3),3)}):
     
     if opts['Inference'] == 'Method of moments':
         
@@ -18,7 +19,7 @@ def Mixture_Model_1Dim(data_vector, opts={'Inference':'Method of moments',
 
     elif opts['Inference'] == 'Maximum Likelihood':
         
-        print "not implemented yet, very easy... do?"
+        print "not implemented yet, very easy... do? Method of moments is a good approximation"
         Model = 0
         
     elif opts['Inference'] == 'Variational Bayes':
