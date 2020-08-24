@@ -1,7 +1,7 @@
 
 import alb_MM_functions as alb
 import math
-from pylab import find, size  
+#from pylab import find, size  
 import numpy as np
 import scipy.stats
 import warnings
@@ -12,8 +12,12 @@ def Mix_Mod_MethodOfMoments(x, opts={'Number_of_Components':3,'Components_Model'
     
     tmp_mu,tmp_v,maxiters,tol,K,tmp_PI,Exp_lik = init_MM(x,opts)
     #indexes of samples to assign 0 prob wrt each positive definite distr.
-    xneg=find(x<pow(10,-14))
-    xpos=find(x>-pow(10,-14))
+    #xneg=find(x<pow(10,-14))
+    #xpos=find(x>-pow(10,-14))
+    
+    xneg=np.argwhere(x<pow(10,-14))[:,0]
+    xpos=np.argwhere(x>-pow(10,-14))[:,0]
+    
     #ITERATE
     flag=0
     it=0
@@ -78,8 +82,11 @@ def init_MM(x,opts):
 
 
 def MM_E_step(x,K,opts,tmp_mu,tmp_v,tmp_PI,xpos,xneg):
-    PS=np.zeros([K,size(x)])
-    D=np.zeros([K,size(x)]) # storages probability of samples wrt distributions
+    #PS=np.zeros([K,size(x)])
+    #D=np.zeros([K,size(x)]) # storages probability of samples wrt distributions
+    PS=np.zeros([K,x.shape[0]])
+    D=np.zeros([K,x.shape[0]]) # storages probability of samples wrt distributions
+    
     tmp_a=np.zeros(K) #it will remain zero for non-gamma or inv gamma distributions
     tmp_b=np.zeros(K) #it will remain zero for non-gamma or inv gamma distributions   
     for k in range(K):
@@ -148,11 +155,14 @@ def rnd_gamma(alpha,beta,n):
 
 #iNVERSE GAMMA PDF,InvG=invgam(GS,2,3): IN MATLAB invgam = @(x,a,b) b^a/gamma(a).*(1./x).^(a+1).*exp(-b./x);
 def invgam(x,aa,bb):
-    out=np.multiply(np.ones(x.shape[0]) *np.divide(np.power(bb,aa),math.gamma(aa)), np.multiply(np.power(np.divide(np.ones(size(x)),x),aa+1) ,np.exp(np.divide(np.ones(size(x))*-bb,x))));
+    #out=np.multiply(np.ones(x.shape[0]) *np.divide(np.power(bb,aa),math.gamma(aa)), np.multiply(np.power(np.divide(np.ones(size(x)),x),aa+1) ,np.exp(np.divide(np.ones(size(x))*-bb,x))));
+    out=np.multiply(np.ones(x.shape[0]) *np.divide(np.power(bb,aa),math.gamma(aa)), np.multiply(np.power(np.divide(np.ones(x.shape[0]),x),aa+1) ,np.exp(np.divide(np.ones(x.shape[0])*-bb,x))));
     return out;
 
 def gam_old(x,aa,bb):
-    out=np.multiply(np.multiply(np.true_divide(1,np.multiply(np.power(bb,aa),math.gamma(aa))), np.power(x,aa-1)),np.exp(np.divide(np.ones(size(x))*-x,bb)));
+    #out=np.multiply(np.multiply(np.true_divide(1,np.multiply(np.power(bb,aa),math.gamma(aa))), np.power(x,aa-1)),np.exp(np.divide(np.ones(size(x))*-x,bb)));
+    out=np.multiply(np.multiply(np.true_divide(1,np.multiply(np.power(bb,aa),math.gamma(aa))), np.power(x,aa-1)),np.exp(np.divide(np.ones(x.shape[0])*-x,bb)));
+
     return out;
 
 def gam(x,aa,bb):
