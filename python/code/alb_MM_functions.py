@@ -179,11 +179,34 @@ def varIG(alpha,beta):
 
 def alphaIG(mu,var):
     aa=np.true_divide(np.power(mu, 2),var)+2;
+    #added hack to avoid overflow that almost never happen!!
+    while aa > 160: # above 160 math.gamma(aa) is just numerical error and above 180 overflow 
+        var=var+0.001
+        aa=np.true_divide(np.power(mu, 2),var)+2;
+    
     return aa
 
-def betaIG(mu,var):
-    aa=np.multiply(mu,np.true_divide(np.power(mu, 2),var)+1);
+def betaIG(mu,var): 
+    bb=np.multiply(mu,np.true_divide(np.power(mu, 2),var)+1);
+    
+    #loop to make sure we make the same alpha as in previous function in case it needed to be hacked to avoid overflow
+    aa=np.true_divide(np.power(mu, 2),var)+2;
+    #added hack to avoid overflow that almost never happen!!
+    while aa > 160: # above 160 math.gamma(aa) is just numerical error and above 180 overflow 
+        var=var+0.001
+        aa=np.true_divide(np.power(mu, 2),var)+2;
+        bb=np.multiply(mu,np.true_divide(np.power(mu, 2),var)+1);
+
+    return bb
+
+def alphaIG_raw(mu,var):
+    aa=np.true_divide(np.power(mu, 2),var)+2;    
     return aa
+
+def betaIG_raw(mu,var): 
+    bb=np.multiply(mu,np.true_divide(np.power(mu, 2),var)+1);
+    return bb
+
 
 def alphaGm(mu,var):
     aa=np.true_divide(np.power(mu, 2),var);
