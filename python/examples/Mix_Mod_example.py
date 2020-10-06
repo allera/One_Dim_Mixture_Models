@@ -29,7 +29,7 @@ else:
     
 
 #Define options for the mixture model fit
-Inference ='Method of moments'#'Variational Bayes'#'Method of moments'#'Variational Bayes'  #'Method of moments' OR 'Maximum Likelihood' OR 'Variational Bayes' ML NOT INCLUDED YET
+Inference ='Maximum Likelihood' #'Method of moments'#'Variational Bayes'#'Method of moments'#'Variational Bayes'  #'Method of moments' OR 'Maximum Likelihood' OR 'Variational Bayes' ML NOT INCLUDED YET
 Number_of_Components=3
 Components_Model=['Gauss','InvGamma','-InvGamma'] #Each component can be Gauss, Gamma, InvGamma, -Gamma, -InvGamma
 init_params=[0,1,5,2,-5,2]
