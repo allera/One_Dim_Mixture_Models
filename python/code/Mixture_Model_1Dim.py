@@ -6,6 +6,8 @@ Created on Wed Feb  7 12:30:57 2018
 """
 from alb_MM_functions import Mix_Mod_MethodOfMoments
 from SIN_VB_MixMod import Mix_Mod_VB
+from alb_ML_functions import Mix_Mod_ML
+
 import numpy as np
 
 def Mixture_Model_1Dim(data_vector, opts={'Inference':'Method of moments',
@@ -20,6 +22,7 @@ def Mixture_Model_1Dim(data_vector, opts={'Inference':'Method of moments',
     elif opts['Inference'] == 'Maximum Likelihood':
         
         print "not implemented yet, very easy... do? Method of moments is a good approximation"
+        Model = Mix_Mod_ML(data_vector, opts)
         Model = 0
         
     elif opts['Inference'] == 'Variational Bayes':
