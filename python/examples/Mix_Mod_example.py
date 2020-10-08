@@ -21,7 +21,7 @@ sys.path.append(os.path.join(os.path.abspath(toolbox_path)))
 generate_new_data=1
 if generate_new_data==1:
     from generate_data_vector2 import generate_data_vector
-    data_vector=generate_data_vector(3, 50000, [0,5,-5], [1,1,1], [0.8, 0.1, 0.1])
+    data_vector=generate_data_vector(3, 50000, [0,3,-3], [1,1,1], [0.8, 0.1, 0.1])
 else:
     import scipy.io as sio
     sio.loadmat('data_vector.mat')

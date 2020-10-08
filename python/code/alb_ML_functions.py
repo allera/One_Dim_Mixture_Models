@@ -1,31 +1,31 @@
 
-import alb_ML_functions as alb
+import alb_MM_functions as alb
 import math
-#from pylab import find, size  
 import numpy as np
 import scipy.stats
+from scipy import special
 import warnings
 warnings.filterwarnings("ignore")
 
 def Mix_Mod_ML(x, opts={'Number_of_Components':3,'Components_Model':['Gauss','Gamma','-Gamma'],
                     'init_params':[0,1,3,1,-3,1],'maxits':np.int(100),'tol':0.00001,'init_pi':np.true_divide(np.ones(3),3)}): 
     
-    param1,param2,maxiters,tol,K,tmp_PI,Exp_lik = init_ML(x,opts)
-    #indexes of samples to assign 0 prob wrt each positive definite distr.
-    #xneg=find(x<pow(10,-14))
-    #xpos=find(x>-pow(10,-14))
     
+    param1,param2,maxiters,tol,K,tmp_PI,MM_Exp_lik= init_ML(x,opts)
+    
+    #indexes of samples to assign 0 prob wrt each positive definite distr.    
     xneg=np.argwhere(x<pow(10,-14))[:,0]
     xpos=np.argwhere(x>-pow(10,-14))[:,0]
     
     #ITERATE
     flag=0
     it=0
+    Exp_lik=np.zeros(opts['maxits']+1)
     while flag==0:
         # E-step    
         PS,resp,tmp_PI,N,Exp_lik[it] = ML_E_step(x,K,opts,param1,param2,tmp_PI,xpos,xneg)
         #M-step
-        param1, param2 = ML_M_step(x,K,param1,param2,resp,N,opts)
+        param1, param2 = ML_M_step(x,K,param1,param2,resp,N,opts,xpos,xneg)
         #convergence criterium
         if it>0:
             if (abs((Exp_lik[it]-Exp_lik[it-1])/Exp_lik[it-1] )< tol) | (it > maxiters-1):
@@ -33,55 +33,59 @@ def Mix_Mod_ML(x, opts={'Number_of_Components':3,'Components_Model':['Gauss','Ga
         it=it+1
         
     #gather output
+    tmp_mu=np.zeros(K) #it will remain zero for non-gauss
+    tmp_v = np.zeros(K)  
+
     tmp_a=np.zeros(K) #it will remain zero for non-gamma or inv gamma distributions
     tmp_b=np.zeros(K) #it will remain zero for non-gamma or inv gamma distributions  
     tmp_c=np.zeros(K)
     for k in range(K):
-        if opts['Components_Model'][k]=='Gamma': 
-            tmp_a[k] =alb.alphaGm(tmp_mu[k],tmp_v[k])
-            tmp_b[k] =alb.betaGm(tmp_mu[k],tmp_v[k])    
-        elif opts['Components_Model'][k]=='-Gamma': 
-            tmp_a[k] =alb.alphaGm(-1*tmp_mu[k],tmp_v[k])
-            tmp_b[k] =alb.betaGm(-1*tmp_mu[k],tmp_v[k])     
-        elif opts['Components_Model'][k]=='InvGamma': 
-            tmp_a[k] =alb.alphaIG(tmp_mu[k],tmp_v[k])
-            tmp_c[k] =alb.betaIG(tmp_mu[k],tmp_v[k])
-        elif opts['Components_Model'][k]=='-InvGamma': 
-            tmp_a[k] =alb.alphaIG(-1*tmp_mu[k],tmp_v[k])
-            tmp_c[k] =alb.betaIG(-1*tmp_mu[k],tmp_v[k])
+        if opts['Components_Model'][k]=='Gauss': 
+            tmp_mu[k] = param1[k]
+            tmp_v[k] = param2[k]    
+        elif ((opts['Components_Model'][k]=='Gamma') | (opts['Components_Model'][k]=='-Gamma')): 
+            tmp_a[k] =  param1[k]
+            tmp_b[k] =  param2[k]    
+        elif ( (opts['Components_Model'][k]=='InvGamma') | (opts['Components_Model'][k]=='-InvGamma') ): 
+            tmp_a[k] =  param1[k]
+            tmp_c[k] =  param2[k]
         elif opts['Components_Model'][k]=='Beta': 
-            tmp_a[k] =alb.a_beta_distr(tmp_mu[k],tmp_v[k])
-            tmp_c[k] =alb.b_beta_distr(tmp_mu[k],tmp_v[k])
+            tmp_a[k] =alb.a_beta_distr(param1[k],param2[k])
+            tmp_c[k] =alb.b_beta_distr(param1[k],param2[k])
             
             
     output_dict={'means':tmp_mu,'mu1':tmp_mu,'variances':tmp_v,'taus1':np.divide(1,tmp_v),'Mixing Prop.':np.asarray(tmp_PI)[0],
                  'Likelihood':Exp_lik[0:it],'its':it,'Final responsibilities':resp,
-                 'opts':opts,'shapes':tmp_a,'scales':tmp_c,'rates':np.divide(1.,tmp_b)}
+                 'opts':opts,'shapes':tmp_a,'scales':tmp_c,'rates':tmp_b}
 
     return output_dict 
 
 def init_ML(x,opts):
-    maxiters=opts['maxits']
+    
     tol=opts['tol']
+    maxiters=opts['maxits']
     K=opts['Number_of_Components']
-    all_params=opts['init_params']
-    #init means and variances
-    tmp_mu=np.zeros(K)
-    tmp_v=np.zeros(K)
+    #Exp_lik=np.zeros(maxiters+1)
+
+    #opts['maxits']=int(10)
+    Model = alb.Mix_Mod_MethodOfMoments(x, opts)
+    Exp_lik=Model['Likelihood']
+    
+    tmp_mu=Model['mu1']
+    tmp_v=Model['variances']
+    tmp_PI=Model['Mixing Prop.']
     param1=np.zeros(K)
     param2=np.zeros(K)
     for k in range(K):
-        tmp_mu[k]=all_params[np.int(2*k)]
-        tmp_v[k]=all_params[np.int((2*k)+1)]
         if opts['Components_Model'][k]=='Gauss':
             param1[k]=tmp_mu[k]
             param2[k]=tmp_v[k]
-        if opts['Components_Model'][k]=='Gamma': 
+        elif opts['Components_Model'][k]=='Gamma': 
             param1[k] =alb.alphaGm(tmp_mu[k],tmp_v[k])
-            param2[k] =alb.betaGm(tmp_mu[k],tmp_v[k])    
+            param2[k] =np.divide(1.,alb.betaGm(tmp_mu[k],tmp_v[k]))    
         elif opts['Components_Model'][k]=='-Gamma': 
             param1[k] =alb.alphaGm(-1*tmp_mu[k],tmp_v[k])
-            param2[k] =alb.betaGm(-1*tmp_mu[k],tmp_v[k])     
+            param2[k] =np.divide(1.,alb.betaGm(-1*tmp_mu[k],tmp_v[k]))     
         elif opts['Components_Model'][k]=='InvGamma': 
             param1[k] =alb.alphaIG(tmp_mu[k],tmp_v[k])
             param2[k] =alb.betaIG(tmp_mu[k],tmp_v[k])
@@ -91,20 +95,13 @@ def init_ML(x,opts):
         elif opts['Components_Model'][k]=='Beta': 
             param1[k] =alb.a_beta_distr(tmp_mu[k],tmp_v[k])
             param2[k] =alb.b_beta_distr(tmp_mu[k],tmp_v[k])
-            
-        
-    tmp_PI=opts['init_pi']
-    #tmp_PI=np.true_divide(np.ones(K),K)  
-
-      
-    Exp_lik=np.zeros(maxiters+1)
+    
+    
     
     return param1,param2,maxiters,tol,K,tmp_PI,Exp_lik
 
 
 def ML_E_step(x,K,opts,param1,param2,tmp_PI,xpos,xneg):
-    #PS=np.zeros([K,size(x)])
-    #D=np.zeros([K,size(x)]) # storages probability of samples wrt distributions
     PS=np.zeros([K,x.shape[0]])
     D=np.zeros([K,x.shape[0]]) # storages probability of samples wrt distributions
     
@@ -114,29 +111,19 @@ def ML_E_step(x,K,opts,param1,param2,tmp_PI,xpos,xneg):
         if opts['Components_Model'][k]=='Gauss':        
             Nobj=scipy.stats.norm(param1[k],np.power(param2[k],0.5));
             PS[k,:]=Nobj.pdf(x);            
-        if opts['Components_Model'][k]=='Gamma': 
-            #tmp_a[k] =alb.alphaGm(tmp_mu[k],tmp_v[k])
-            #tmp_b[k] =alb.betaGm(tmp_mu[k],tmp_v[k])    
-            PS[k,:]=alb.gam(x,param1[k], param2[k]);
+        if opts['Components_Model'][k]=='Gamma':     
+            PS[k,:]=alb.gam(x,param1[k], 1/param2[k]);
             PS[k,xneg]=0
-        if opts['Components_Model'][k]=='-Gamma': 
-            #tmp_a[k] =alb.alphaGm(-1*tmp_mu[k],tmp_v[k])
-            #tmp_b[k] =alb.betaGm(-1*tmp_mu[k],tmp_v[k])     
-            PS[k,:]=alb.gam(-1*x,param1[k], param2[k]);
+        if opts['Components_Model'][k]=='-Gamma':     
+            PS[k,:]=alb.gam(-1*x,param1[k], 1/param2[k]);
             PS[k,xpos]=0
         if opts['Components_Model'][k]=='InvGamma': 
-            #tmp_a[k] =alb.alphaIG(tmp_mu[k],tmp_v[k])
-            #tmp_b[k] =alb.betaIG(tmp_mu[k],tmp_v[k])
             PS[k,:]=alb.invgam(x,param1[k], param2[k])
             PS[k,xneg]=0
         if opts['Components_Model'][k]=='-InvGamma': 
-            #tmp_a[k] =alb.alphaIG(-1*tmp_mu[k],tmp_v[k])
-            #tmp_b[k] =alb.betaIG(-1*tmp_mu[k],tmp_v[k])
             PS[k,:]=alb.invgam(-1*x,param1[k], param2[k])
             PS[k,xpos]=0
         if opts['Components_Model'][k]=='Beta': 
-            #tmp_a[k] =alb.a_beta_distr(tmp_mu[k],tmp_v[k])
-            #tmp_b[k] =alb.b_beta_distr(tmp_mu[k],tmp_v[k])
             PS[k,:]=scipy.stats.beta.pdf(x,param1[k], param2[k])
             
             
@@ -152,103 +139,96 @@ def ML_E_step(x,K,opts,param1,param2,tmp_PI,xpos,xneg):
     
     return PS,resp,tmp_PI,N,Exp_lik
 
-def ML_M_step(x,K,param1,param2,resp,N,opts):
+def ML_M_step(x,K,param1,param2,resp,N,opts,xpos,xneg):
     for k in range(K):
         if opts['Components_Model'][k]=='Gauss':        
             param1[k] =np.sum(np.multiply(resp[k,:],x))/N[k]
             param2[k]=np.sum(np.multiply(resp[k,:],np.square(x-param1[k])))/N[k]
-         if opts['Components_Model'][k]=='Gamma': 
-            param1[k] =0n
-            param2[k]=0
+        
+        if ( (opts['Components_Model'][k]=='Gamma') | (opts['Components_Model'][k]=='-Gamma')): 
             #%ML parameters estimation similar to minka MODEL 2,fastest
-            #    tic
-            #    m=mean(x);
-            #    v=var(x);
-            #    ml=mean(log(x));
-            #    lm=log(m);
-            #    %init alpha using MM
-            #    it=1;
-            #    %a_MINKA(it)=.5/(lm-ml);
-            #    a(it)=alphaGm(m,v);
-            #    flag=0;
-            #    
-            #    while flag==0
-            #        it=it+1;
-            #        dum=(1/a(it-1)) + (ml-lm+log(a(it-1))-psi(a(it-1)))/(a(it-1)^2 *( (a(it-1)^-1) - psi(1,a(it-1))));%typo in my aistat submition!!!!
-            #        a(it)=1/dum;
-            #        %BL2: as(it)=( (-as(it-1)^2*psi(1,as(it-1))) +as(it-1) ) / (  -psi(as(it-1)) +log(as(it-1))   -(as(it-1)*psi(1,as(it-1)))+1 +mlxterm);
-            #
-            #        if abs(a(it)-a(it-1))/abs(a(it-1)) <tol %|it>maxit
-            #             flag=1;
-            #        end
-            #    end
-            #    ML_all_alphas=a;
-            #    ML2a=a(end); % maximum likelihood alpha estimation
-            #    ML2b=m/a(end); % maximum likelihood beta estimation
-            #    time(3,rep)=toc;
-            #    ML2out=gampdf(range,ML2a,ML2b);
-            #    KL.ML2=KLg(ML2a,ML2b,atrue,btrue);
-            #    all_estML2(Nidx,rep,:)=[ML2a ; ML2b];
-            #    iterations(3,rep)=it;
+            if opts['Components_Model'][k]=='Gamma':
+                xx=x[xpos]
+                m=np.sum(np.multiply(resp[k,xpos],xx))/N[k] 
+                v=np.sum(np.multiply(resp[k,xpos],np.square(xx-m)))/N[k]  
+                ml=np.sum(np.multiply(np.log(xx),resp[k,xpos]))/N[k] 
+
+            else:
+                xx=-x[xneg]
+                m=np.sum(np.multiply(resp[k,xneg],xx))/N[k] 
+                v=np.sum(np.multiply(resp[k,xneg],np.square(xx-m)))/N[k]  
+                ml=np.sum(np.multiply(np.log(xx),resp[k,xneg]))/N[k] 
+
+            lm=np.log(m)
+            aa=param1[k]
+            start_aa=np.copy(aa)
+           
+            flag=0;
+            its2=0
+            while flag==0: 
+                its2=its2+1
+                dum=(1/aa) + ( (ml - lm + np.log(aa) -special.polygamma(0,aa)) / (np.power(aa,2)* ((1/aa)-special.polygamma(1,aa))) )
+                old_aa=np.copy(aa)
+                aa=1/dum;
+                df=abs(aa-old_aa)
+                if ((df < opts['tol']) | (its2 > 20)):
+                    flag=1
+
+            param1[k]=aa 
+            param2[k]=1/(m/aa) # the actual update in the paper is for the scale so needs invertion to return rate...
+
+        
             
+        elif ((opts['Components_Model'][k]=='InvGamma') | (opts['Components_Model'][k]=='-InvGamma')) : 
+        #ML parameters estimation using our derivations inspired by gamma minka MODEL 2, using approx to
+        # likelihood p(a)=c0 + c1a+c2 log a
+            if opts['Components_Model'][k]=='InvGamma':
+                xx=x[xpos]
+                m=np.sum(np.multiply(resp[k,xpos],xx))/N[k] 
+                v=np.sum(np.multiply(resp[k,xpos],np.square(xx-m)))/N[k] 
+                ml=np.sum(np.multiply(np.log(xx),resp[k,xpos]))/N[k] 
+                Lis=np.log(np.sum(np.multiply(resp[k,xpos],1./xx))) 
+
+            else:
+                xx=-x[xneg]
+                m=np.sum(np.multiply(resp[k,xneg],xx))/N[k] 
+                v=np.sum(np.multiply(resp[k,xneg],np.square(xx-m)))/N[k] 
+                ml=np.sum(np.multiply(np.log(xx),resp[k,xneg]))/N[k] 
+                #Lis=np.log(np.sum(1./xx)) 
+                Lis=np.log(np.sum(np.multiply(resp[k,xneg],1./xx))) 
+                
+            ns=N[k] 
+            aa=param1[k]
+            init_aa=np.copy(aa)
+            p2=param2[k]
+           
+            flag=0; 
+            its2=0
+            while flag==0: 
+                its2=its2+1
+                dum=(1/aa) + (  ( (-ml-special.polygamma(0,aa)+ np.log(ns*aa) - Lis ))  /   (np.power(aa,2)*( ((1/aa)-special.polygamma(1,aa))))  )
+                old_aa=np.copy(aa)
+                aa=1/dum;
+                df=abs(aa-old_aa)
+                if ((df < opts['tol']) | (its2 > 20)):
+                    flag=1
+
+            param1[k]=aa 
             
-            
-        if opts['Components_Model'][k]=='-Gamma': 
-            param1[k] =0
-            param2[k]=0
-        if opts['Components_Model'][k]=='InvGamma': 
-            param1[k] =np.sum(np.multiply(resp[k,:],x))/N[k]
-            param2[k]=np.sum(np.multiply(resp[k,:],np.square(x-param1[k])))/N[k]
-#             %ML parameters estimation similar to minka MODEL 2, using approx to
-#   %likelihood p(a)=c0 + c1a+c2 log a
-#    m=mean(x);
-#    v=var(x);
-#    ns=numel(x);
-#    %init alpha using MM
-#    it=1;
-#    a(it)=alphaIG(m,v);
-#    flag=0;
-#    Lis=log(sum(1./x));
-#    ml=mean(log(x));
-#    while flag==0
-#        it=it+1;
-#        dum=(1/a(it-1)) + (( (-ml-psi(a(it-1))+log(ns*a(it-1)) - Lis ))  /   (a(it-1)^2*( (1/a(it-1))-psi(1,a(it-1)))));
-#        a(it)=1/dum;
-#        if abs(a(it)-a(it-1))/abs(a(it-1)) <tol
-#             flag=1;
-#        end
-#    end
-#    ML2_all_alphas=a;
-#    ML2a=a(end); % maximum likelihood alpha estimation
-#    ML2b=(numel(x)*ML2a)/sum(1./x); % maximum likelihood beta estimation
-#    ML2out=invgam(range,ML2a,ML2b);
+            if opts['Components_Model'][k]=='InvGamma':
+                param2[k]=(ns * aa) / np.sum(np.multiply(resp[k,xpos],1./xx)) 
+            else:
+                param2[k]=(ns * aa) / np.sum(np.multiply(resp[k,xneg],1./xx)) 
 
 
-        if opts['Components_Model'][k]=='-InvGamma': 
-            param1[k] =0
-            param2[k]=0
-        if opts['Components_Model'][k]=='Beta': 
+        elif opts['Components_Model'][k]=='Beta': 
+            print('ML not implemented for Betas, resolving to Method of Moments')
             param1[k] =np.sum(np.multiply(resp[k,:],x))/N[k]
             param2[k]=np.sum(np.multiply(resp[k,:],np.square(x-param1[k])))/N[k]
-            
-            
+
+
     return param1,param2
 
-#RANDOM GAUSS GENERATOR: you can call alb_rndn function as > GS = alb_rndn(100,0,1);
-def rndn(n,mu,sigma):
-    Gauss_samples = np.random.normal(mu, sigma, n);
-    GS=Gauss_samples;
-    return GS;
-    
-#RANDOM GAMMA GENERATOR: you can call alb_rnd_gamma function as gms = alb_rnd_gamma(3,5,10);
-def rnd_gamma(alpha,beta,n):
-    Gamma_samples = np.random.gamma(alpha, beta,n);
-    gms=Gamma_samples;
-    return gms;
-
-#def normpdf(x,m,v):
-#    out=np.multiply(  pow( 2*math.pi*(pow(v,2)),-0.5 ) ,  exp(np.divide(pow(x-(m*np.ones(size(x))),2),(-2*v)*np.ones(size(x)))); 
-#    return out;
 
 #iNVERSE GAMMA PDF,InvG=invgam(GS,2,3): IN MATLAB invgam = @(x,a,b) b^a/gamma(a).*(1./x).^(a+1).*exp(-b./x);
 def invgam(x,aa,bb):
