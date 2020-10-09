@@ -93,27 +93,27 @@ def MM_E_step(x,K,opts,tmp_mu,tmp_v,tmp_PI,xpos,xneg):
         if opts['Components_Model'][k]=='Gauss':        
             Nobj=scipy.stats.norm(tmp_mu[k],np.power(tmp_v[k],0.5));
             PS[k,:]=Nobj.pdf(x);            
-        if opts['Components_Model'][k]=='Gamma': 
+        elif opts['Components_Model'][k]=='Gamma': 
             tmp_a[k] =alb.alphaGm(tmp_mu[k],tmp_v[k])
             tmp_b[k] =alb.betaGm(tmp_mu[k],tmp_v[k])    
             PS[k,:]=alb.gam(x,tmp_a[k], tmp_b[k]);
             PS[k,xneg]=0
-        if opts['Components_Model'][k]=='-Gamma': 
+        elif opts['Components_Model'][k]=='-Gamma': 
             tmp_a[k] =alb.alphaGm(-1*tmp_mu[k],tmp_v[k])
             tmp_b[k] =alb.betaGm(-1*tmp_mu[k],tmp_v[k])     
             PS[k,:]=alb.gam(-1*x,tmp_a[k], tmp_b[k]);
             PS[k,xpos]=0
-        if opts['Components_Model'][k]=='InvGamma': 
+        elif opts['Components_Model'][k]=='InvGamma': 
             tmp_a[k] =alb.alphaIG(tmp_mu[k],tmp_v[k])
             tmp_b[k] =alb.betaIG(tmp_mu[k],tmp_v[k])
             PS[k,:]=alb.invgam(x,tmp_a[k], tmp_b[k])
             PS[k,xneg]=0
-        if opts['Components_Model'][k]=='-InvGamma': 
+        elif opts['Components_Model'][k]=='-InvGamma': 
             tmp_a[k] =alb.alphaIG(-1*tmp_mu[k],tmp_v[k])
             tmp_b[k] =alb.betaIG(-1*tmp_mu[k],tmp_v[k])
             PS[k,:]=alb.invgam(-1*x,tmp_a[k], tmp_b[k])
             PS[k,xpos]=0
-        if opts['Components_Model'][k]=='Beta': 
+        elif opts['Components_Model'][k]=='Beta': 
             tmp_a[k] =alb.a_beta_distr(tmp_mu[k],tmp_v[k])
             tmp_b[k] =alb.b_beta_distr(tmp_mu[k],tmp_v[k])
             PS[k,:]=scipy.stats.beta.pdf(x,tmp_a[k], tmp_b[k])
@@ -124,10 +124,17 @@ def MM_E_step(x,K,opts,tmp_mu,tmp_v,tmp_PI,xpos,xneg):
     resp= np.divide(D,np.matrix(np.sum(D,0) ))
     N=np.sum(resp,1)   
     tmp_PI=np.divide(N,np.sum(resp)).T
-    dum=np.add(np.log(PS),np.log(tmp_PI).T) 
-    dum[np.isinf(dum)]=0
-    dum[np.isinf(dum)]=0
-    Exp_lik=np.sum(np.multiply(resp,dum))
+    if 0:
+        dum=np.add(np.log(PS),np.log(tmp_PI).T) 
+        dum[np.isinf(dum)]=0
+        dum[np.isinf(dum)]=0
+        Exp_lik=np.sum(np.multiply(resp,dum))
+    else:
+        dum=np.multiply(tmp_PI.T,PS) #add(np.log(PS),np.log(tmp_PI).T) 
+        dum[np.isinf(dum)]=1
+        dum[np.isinf(dum)]=1
+        dum[dum==0]=1
+        Exp_lik=np.sum(np.log(dum))
     
     return PS,resp,tmp_PI,N,Exp_lik
 

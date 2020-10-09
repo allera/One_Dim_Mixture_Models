@@ -6,6 +6,7 @@ import scipy.stats
 from scipy import special
 import warnings
 warnings.filterwarnings("ignore")
+import copy
 
 def Mix_Mod_ML(x, opts={'Number_of_Components':3,'Components_Model':['Gauss','Gamma','-Gamma'],
                     'init_params':[0,1,3,1,-3,1],'maxits':np.int(100),'tol':0.00001,'init_pi':np.true_divide(np.ones(3),3)}): 
@@ -67,7 +68,8 @@ def init_ML(x,opts):
     K=opts['Number_of_Components']
     #Exp_lik=np.zeros(maxiters+1)
 
-    #opts['maxits']=int(10)
+    opts_MM=copy.deepcopy(opts)
+    opts_MM['maxits']=np.int(1)
     Model = alb.Mix_Mod_MethodOfMoments(x, opts)
     Exp_lik=Model['Likelihood']
     
@@ -132,10 +134,18 @@ def ML_E_step(x,K,opts,param1,param2,tmp_PI,xpos,xneg):
     resp= np.divide(D,np.matrix(np.sum(D,0) ))
     N=np.sum(resp,1)   
     tmp_PI=np.divide(N,np.sum(resp)).T
-    dum=np.add(np.log(PS),np.log(tmp_PI).T) 
-    dum[np.isinf(dum)]=0
-    dum[np.isinf(dum)]=0
-    Exp_lik=np.sum(np.multiply(resp,dum))
+    if 0:
+        dum=np.add(np.log(PS),np.log(tmp_PI).T) 
+        dum[np.isinf(dum)]=0
+        dum[np.isinf(dum)]=0
+        Exp_lik=np.sum(np.multiply(resp,dum))
+    else:
+        dum=np.multiply(tmp_PI.T,PS) #add(np.log(PS),np.log(tmp_PI).T) 
+        dum[np.isinf(dum)]=1
+        dum[np.isinf(dum)]=1
+        dum[dum==0]=1
+
+        Exp_lik=np.sum(np.log(dum))
     
     return PS,resp,tmp_PI,N,Exp_lik
 

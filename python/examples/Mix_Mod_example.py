@@ -29,9 +29,10 @@ else:
     
 
 #Define options for the mixture model fit
-Inference ='Maximum Likelihood' #'Method of moments'#'Variational Bayes'#'Method of moments'#'Variational Bayes'  #'Method of moments' OR 'Maximum Likelihood' OR 'Variational Bayes' ML NOT INCLUDED YET
+Inferences_possibilities=['Method of moments','Maximum Likelihood','Variational Bayes']    
+Inference =Inferences_possibilities[1]
 Number_of_Components=3
-Components_Model=['Gauss','InvGamma','-InvGamma'] #Each component can be Gauss, Gamma, InvGamma, -Gamma, -InvGamma
+Components_Model=['Gauss','Gamma','-Gamma'] #Each component can be Gauss, Gamma, InvGamma, -Gamma, -InvGamma
 init_params=[0,1,5,2,-5,2]
 init_pi=np.ones(3);
 init_pi=np.divide(init_pi,3)
@@ -57,32 +58,72 @@ from alb_MM_functions import invgam
 from alb_MM_functions import gam
 from scipy.stats import norm
 
-my_range=np.linspace(-10,10,10000)
-
-plt0=np.multiply( Model['Mixing Prop.'][0],norm.pdf(my_range,Model['mu1'][0],np.sqrt(np.divide(1,Model['taus1'][0]))  ) )
-
-if Components_Model[1]=='InvGamma':
-    plt1=np.multiply( Model['Mixing Prop.'][1],invgam(my_range,Model['shapes'][1],Model['scales'][1]))
-elif Components_Model[1]=='Gamma':
-    plt1=np.multiply( Model['Mixing Prop.'][1],gam(my_range,Model['shapes'][1],np.divide(1,Model['rates'][1])))
-    
-plt1[my_range<0]=0
-
-if Components_Model[2]=='-InvGamma':
-    plt2=np.multiply( Model['Mixing Prop.'][2],invgam(-my_range,Model['shapes'][2],Model['scales'][2]))
-elif Components_Model[2]=='-Gamma':
-    plt2=np.multiply( Model['Mixing Prop.'][2],gam(-my_range,Model['shapes'][2],np.divide(1,Model['rates'][2])))
-    
-plt2[my_range>0]=0
+T=10000
+my_range=np.linspace(-10,10,T)
+PLTS=np.zeros([Number_of_Components,T])
 
 
+for k in range(Number_of_Components):
+    if Components_Model[k]=='Gauss':
+        PLTS[k,:]=np.multiply( Model['Mixing Prop.'][k],norm.pdf(my_range,Model['mu1'][k],np.sqrt(np.divide(1,Model['taus1'][k]))  ) )
+        
+    elif Components_Model[k]=='InvGamma':
+        PLTS[k,:]=np.multiply( Model['Mixing Prop.'][k],invgam(my_range,Model['shapes'][k],Model['scales'][k]))
+        PLTS[k,my_range<0]=0
+
+    elif Components_Model[k]=='Gamma':
+        PLTS[k,:]=np.multiply( Model['Mixing Prop.'][k],gam(my_range,Model['shapes'][k],np.divide(1,Model['rates'][k])))
+        PLTS[k,my_range<0]=0
+
+    elif Components_Model[2]=='-InvGamma':
+         PLTS[k,:]=np.multiply( Model['Mixing Prop.'][k],invgam(-my_range,Model['shapes'][k],Model['scales'][k]))
+         PLTS[k,my_range>0]=0
+
+    elif Components_Model[2]=='-Gamma':
+         PLTS[k,:]=np.multiply( Model['Mixing Prop.'][k],gam(-my_range,Model['shapes'][k],np.divide(1,Model['rates'][k])))
+         PLTS[k,my_range>0]=0
+
+   
+        
 import matplotlib.pyplot as plt
 plt.hist(data_vector,bins=50,density=True,alpha=1, color='g')
-plt.plot(my_range,plt0, 'k', linewidth=2)
-plt.plot(my_range,plt1, 'k', linewidth=2)
-plt.plot(my_range,plt2, 'k', linewidth=2)
-plt.plot(my_range,plt0+plt1+plt2, 'r', linewidth=2)
-plt.show()
+for k in range(Number_of_Components):
+    plt.plot(my_range, PLTS[k,:], 'k', linewidth=2)
+
+plt.plot(my_range,np.sum(PLTS,0), 'r', linewidth=2)
+plt.show()   
+
+
+plt.clf()
+plt.plot(Model['Likelihood'])   
+    
+    
+        
+
+#plt0=np.multiply( Model['Mixing Prop.'][0],norm.pdf(my_range,Model['mu1'][0],np.sqrt(np.divide(1,Model['taus1'][0]))  ) )
+#
+#if Components_Model[1]=='InvGamma':
+#    plt1=np.multiply( Model['Mixing Prop.'][1],invgam(my_range,Model['shapes'][1],Model['scales'][1]))
+#elif Components_Model[1]=='Gamma':
+#    plt1=np.multiply( Model['Mixing Prop.'][1],gam(my_range,Model['shapes'][1],np.divide(1,Model['rates'][1])))
+#    
+#plt1[my_range<0]=0
+#
+#if Components_Model[2]=='-InvGamma':
+#    plt2=np.multiply( Model['Mixing Prop.'][2],invgam(-my_range,Model['shapes'][2],Model['scales'][2]))
+#elif Components_Model[2]=='-Gamma':
+#    plt2=np.multiply( Model['Mixing Prop.'][2],gam(-my_range,Model['shapes'][2],np.divide(1,Model['rates'][2])))
+#    
+#plt2[my_range>0]=0
+#
+#
+#import matplotlib.pyplot as plt
+#plt.hist(data_vector,bins=50,density=True,alpha=1, color='g')
+#plt.plot(my_range,plt0, 'k', linewidth=2)
+#plt.plot(my_range,plt1, 'k', linewidth=2)
+#plt.plot(my_range,plt2, 'k', linewidth=2)
+#plt.plot(my_range,plt0+plt1+plt2, 'r', linewidth=2)
+#plt.show()
 
 
 
