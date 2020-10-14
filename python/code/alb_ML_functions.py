@@ -70,7 +70,7 @@ def init_ML(x,opts):
 
     opts_MM=copy.deepcopy(opts)
     opts_MM['maxits']=np.int(1)
-    Model = alb.Mix_Mod_MethodOfMoments(x, opts)
+    Model = alb.Mix_Mod_MethodOfMoments(x, opts_MM)
     Exp_lik=Model['Likelihood']
     
     tmp_mu=Model['mu1']
@@ -114,10 +114,10 @@ def ML_E_step(x,K,opts,param1,param2,tmp_PI,xpos,xneg):
             Nobj=scipy.stats.norm(param1[k],np.power(param2[k],0.5));
             PS[k,:]=Nobj.pdf(x);            
         elif opts['Components_Model'][k]=='Gamma':     
-            PS[k,:]=alb.gam(x,param1[k], 1/param2[k]);
+            PS[k,:]=alb.gam_self(x,param1[k], 1/param2[k]);
             PS[k,xneg]=0
         elif opts['Components_Model'][k]=='-Gamma':     
-            PS[k,:]=alb.gam(-1*x,param1[k], 1/param2[k]);
+            PS[k,:]=alb.gam_self(-1*x,param1[k], 1/param2[k]);
             PS[k,xpos]=0
         elif opts['Components_Model'][k]=='InvGamma': 
             PS[k,:]=alb.invgam(x,param1[k], param2[k])

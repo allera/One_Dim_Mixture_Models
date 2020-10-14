@@ -98,7 +98,7 @@ def Mix_Mod_VB(x,opts):
 
 
     Posterior['lambda']=lambdaq;
-    Posterior['Final responsibilities']=gammas;
+    Posterior['Final responsibilities']=gammas.T;
     Posterior['Mixing Prop.']=np.true_divide(gammas.sum(0),gammas.sum()) #(sum(gammas,2)/sum(sum(gammas)))#';
     Posterior['mu1']=mean_mu1;
     Posterior['taus1']=mean_tau1;
@@ -106,7 +106,7 @@ def Mix_Mod_VB(x,opts):
     Posterior['ftot']=ftot;
     Posterior['FEs']=FEs;
     Posterior['Likelihood']=likelihood;
-    Posterior['it']=it
+    Posterior['its']=it
     for k in range(K):
         if (opts['Components_Model'][k]=='Gamma') or (opts['Components_Model'][k]=='-Gamma'):
             Posterior['rates'][k]=mean_rates[k]

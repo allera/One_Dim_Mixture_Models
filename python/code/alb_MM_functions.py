@@ -30,6 +30,7 @@ def Mix_Mod_MethodOfMoments(x, opts={'Number_of_Components':3,'Components_Model'
         if it>0:
             if (abs((Exp_lik[it]-Exp_lik[it-1])/Exp_lik[it-1] )< tol) | (it > maxiters-1):
                 flag=1
+        #print(it)
         it=it+1
         
     #gather output
@@ -96,12 +97,12 @@ def MM_E_step(x,K,opts,tmp_mu,tmp_v,tmp_PI,xpos,xneg):
         elif opts['Components_Model'][k]=='Gamma': 
             tmp_a[k] =alb.alphaGm(tmp_mu[k],tmp_v[k])
             tmp_b[k] =alb.betaGm(tmp_mu[k],tmp_v[k])    
-            PS[k,:]=alb.gam(x,tmp_a[k], tmp_b[k]);
+            PS[k,:]=alb.gam_self(x,tmp_a[k], tmp_b[k]);
             PS[k,xneg]=0
         elif opts['Components_Model'][k]=='-Gamma': 
             tmp_a[k] =alb.alphaGm(-1*tmp_mu[k],tmp_v[k])
             tmp_b[k] =alb.betaGm(-1*tmp_mu[k],tmp_v[k])     
-            PS[k,:]=alb.gam(-1*x,tmp_a[k], tmp_b[k]);
+            PS[k,:]=alb.gam_self(-1*x,tmp_a[k], tmp_b[k]);
             PS[k,xpos]=0
         elif opts['Components_Model'][k]=='InvGamma': 
             tmp_a[k] =alb.alphaIG(tmp_mu[k],tmp_v[k])
@@ -166,7 +167,7 @@ def invgam(x,aa,bb):
     out=np.multiply(np.ones(x.shape[0]) *np.divide(np.power(bb,aa),math.gamma(aa)), np.multiply(np.power(np.divide(np.ones(x.shape[0]),x),aa+1) ,np.exp(np.divide(np.ones(x.shape[0])*-bb,x))));
     return out;
 
-def gam_old(x,aa,bb):
+def gam_self(x,aa,bb):
     #out=np.multiply(np.multiply(np.true_divide(1,np.multiply(np.power(bb,aa),math.gamma(aa))), np.power(x,aa-1)),np.exp(np.divide(np.ones(size(x))*-x,bb)));
     out=np.multiply(np.multiply(np.true_divide(1,np.multiply(np.power(bb,aa),math.gamma(aa))), np.power(x,aa-1)),np.exp(np.divide(np.ones(x.shape[0])*-x,bb)));
 
