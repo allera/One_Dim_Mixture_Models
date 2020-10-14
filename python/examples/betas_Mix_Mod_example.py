@@ -36,9 +36,10 @@ data_vector=np.append(x1, x2)
 
 
 #Define options for the mixture model fit
-Inference ='Method of moments'#'Variational Bayes'  #'Method of moments' OR 'Maximum Likelihood' OR 'Variational Bayes' ML NOT INCLUDED YET
-Number_of_Components=4
-Components_Model=['Beta','Beta','Beta','Beta']#,'-InvGamma'] #Each component can be Gauss, Gamma, InvGamma, -Gamma, -InvGamma
+Inferences_possibilities=['Method of moments','Maximum Likelihood','Variational Bayes']    
+Inference =Inferences_possibilities[1]
+Number_of_Components=3
+Components_Model=['Beta','Beta','Beta']#,'-InvGamma'] #Each component can be Gauss, Gamma, InvGamma, -Gamma, -InvGamma
 init_means=np.multiply(range(Number_of_Components),np.divide(np.ones(Number_of_Components),Number_of_Components))
 init_means=init_means+np.divide(np.ones(Number_of_Components),2*Number_of_Components)
 

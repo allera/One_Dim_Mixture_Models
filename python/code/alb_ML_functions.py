@@ -51,8 +51,8 @@ def Mix_Mod_ML(x, opts={'Number_of_Components':3,'Components_Model':['Gauss','Ga
             tmp_a[k] =  param1[k]
             tmp_c[k] =  param2[k]
         elif opts['Components_Model'][k]=='Beta': 
-            tmp_a[k] =alb.a_beta_distr(param1[k],param2[k])
-            tmp_c[k] =alb.b_beta_distr(param1[k],param2[k])
+            tmp_a[k] =param1[k] #alb.a_beta_distr(param1[k],param2[k])
+            tmp_c[k] =param2[k] #alb.b_beta_distr(param1[k],param2[k])
             
             
     output_dict={'means':tmp_mu,'mu1':tmp_mu,'variances':tmp_v,'taus1':np.divide(1,tmp_v),'Mixing Prop.':np.asarray(tmp_PI)[0],
@@ -113,19 +113,19 @@ def ML_E_step(x,K,opts,param1,param2,tmp_PI,xpos,xneg):
         if opts['Components_Model'][k]=='Gauss':        
             Nobj=scipy.stats.norm(param1[k],np.power(param2[k],0.5));
             PS[k,:]=Nobj.pdf(x);            
-        if opts['Components_Model'][k]=='Gamma':     
+        elif opts['Components_Model'][k]=='Gamma':     
             PS[k,:]=alb.gam(x,param1[k], 1/param2[k]);
             PS[k,xneg]=0
-        if opts['Components_Model'][k]=='-Gamma':     
+        elif opts['Components_Model'][k]=='-Gamma':     
             PS[k,:]=alb.gam(-1*x,param1[k], 1/param2[k]);
             PS[k,xpos]=0
-        if opts['Components_Model'][k]=='InvGamma': 
+        elif opts['Components_Model'][k]=='InvGamma': 
             PS[k,:]=alb.invgam(x,param1[k], param2[k])
             PS[k,xneg]=0
-        if opts['Components_Model'][k]=='-InvGamma': 
+        elif opts['Components_Model'][k]=='-InvGamma': 
             PS[k,:]=alb.invgam(-1*x,param1[k], param2[k])
             PS[k,xpos]=0
-        if opts['Components_Model'][k]=='Beta': 
+        elif opts['Components_Model'][k]=='Beta': 
             PS[k,:]=scipy.stats.beta.pdf(x,param1[k], param2[k])
             
             
@@ -232,9 +232,55 @@ def ML_M_step(x,K,param1,param2,resp,N,opts,xpos,xneg):
 
 
         elif opts['Components_Model'][k]=='Beta': 
-            print('ML not implemented for Betas, resolving to Method of Moments')
-            param1[k] =np.sum(np.multiply(resp[k,:],x))/N[k]
-            param2[k]=np.sum(np.multiply(resp[k,:],np.square(x-param1[k])))/N[k]
+            
+            p1=copy.deepcopy(param1[k])
+            p2=copy.deepcopy(param2[k])
+            
+            
+            
+            flag=0
+            its2=-1
+            while flag==0:
+                its2=its2+1
+                aa=special.polygamma(0,p1+p2)
+                bb=special.polygamma(0,p1)
+                cc=special.polygamma(0,p2)
+                ml=np.sum(np.multiply(np.log(x),resp[k,:]))/N[k] 
+                ml2=np.sum(np.multiply(np.log(1-x),resp[k,:]))/N[k] 
+                
+                g=np.zeros([1,2])
+                g1=aa-bb+ml
+                g2=aa-cc+ml2
+                g[0,0]=g1
+                g[0,1]=g2
+                
+                G=np.zeros([2,2])
+                g12=special.polygamma(1,p1+p2)
+                g11=g12-special.polygamma(1,p1)
+                g22=g12-special.polygamma(1,p2)
+                G[0,0]=g11
+                G[0,1]=g12
+                G[1,0]=g12
+                G[1,1]=g22
+                
+                
+                Y0=np.array([p1,p2])
+                Y1=(Y0- np.squeeze((np.dot(np.linalg.inv(G),g.T))))     #Y0 -  (np.dot(np.linalg.inv(G),g)) 
+                                
+                change=np.linalg.norm(Y0-Y1)
+                #print(change)
+
+                p1=Y1[0]
+                p2=Y1[1]
+                
+                if (change < opts['tol']) | (its2>20):
+                    flag=1
+                
+            
+            param1[k]= p1
+            param2[k]= p2
+            #param1[k] =np.sum(np.multiply(resp[k,:],x))/N[k]
+            #param2[k]=np.sum(np.multiply(resp[k,:],np.square(x-param1[k])))/N[k]
 
 
     return param1,param2
