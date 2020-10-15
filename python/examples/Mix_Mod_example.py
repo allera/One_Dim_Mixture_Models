@@ -30,7 +30,7 @@ else:
 
 #Define options for the mixture model fit
 Inferences_possibilities=['Method of moments','Maximum Likelihood','Variational Bayes']    
-Inference =Inferences_possibilities[1]
+Inference =Inferences_possibilities[2]
 Number_of_Components=3
 Components_Model=['Gauss','Gamma','-Gamma'] #Each component can be Gauss, Gamma, InvGamma, -Gamma, -InvGamma
 init_params=[0,1,5,2,-5,2]
