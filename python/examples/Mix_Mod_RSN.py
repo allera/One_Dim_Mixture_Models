@@ -117,7 +117,7 @@ if 1:
     
     
     
-                
+                print(icnumber)
                 print(Components_Model)
                 print(Inference)
                 print(COST[icnumber,dist_type,inference_type])
@@ -143,7 +143,7 @@ for dist_type in range(N_models):
             print(MixProp[:,dist_type,inference_type,:])
 
 np.mean(COST,0)
-np.nanmean(MixProp,0)
+np.mean(MixProp,0)
 #savedfile= os.path.join(completeName,'RESULTS.mat')
 #Results=[]
 #Results.append({'Iterations': Its, 'MixingProps' : MixProp, 'Thresholds' :Threshold, 'cost':COST})

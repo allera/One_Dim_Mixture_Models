@@ -170,7 +170,7 @@ def invgam(x,aa,bb):
 def gam_self(x,aa,bb):
     #out=np.multiply(np.multiply(np.true_divide(1,np.multiply(np.power(bb,aa),math.gamma(aa))), np.power(x,aa-1)),np.exp(np.divide(np.ones(size(x))*-x,bb)));
     out=np.multiply(np.multiply(np.true_divide(1,np.multiply(np.power(bb,aa),math.gamma(aa))), np.power(x,aa-1)),np.exp(np.divide(np.ones(x.shape[0])*-x,bb)));
-
+    out=np.nan_to_num(out,0)
     return out;
 
 def gam(x,aa,bb):

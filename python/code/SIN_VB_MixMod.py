@@ -49,7 +49,7 @@ def Mix_Mod_VB(x,opts):
         #==================================E_Step================================    
 
         # compute responsibilitites
-        gammas = my_gammas(x,opts,Posterior)    
+        gammas = my_gammas(x,opts,Posterior)   
         Posterior['gammas']=gammas;
         #==================================E_Step================================   
 

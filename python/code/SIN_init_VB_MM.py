@@ -15,7 +15,7 @@ warnings.filterwarnings("ignore")
 def SIN_init_VB_MM(data,opts):    
     K= opts ['Number_of_Components']
     opts2=copy.deepcopy(opts)
-    opts2['maxits']=10
+    opts2['maxits']=1
     
     #SET PRIORS
     #set mixing priors.
