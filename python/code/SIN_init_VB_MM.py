@@ -15,11 +15,11 @@ warnings.filterwarnings("ignore")
 def SIN_init_VB_MM(data,opts):    
     K= opts ['Number_of_Components']
     opts2=copy.deepcopy(opts)
-    opts2['maxits']=1
+    #opts2['maxits']=1
     
     #SET PRIORS
     #set mixing priors.
-    mmm=3;#(the mean of non gauss component)
+    mmm=10;#(the mean of non gauss component)
     vvv=10;#(the variance of the component)\
     m0=np.zeros(K)
     tau0=np.zeros(K)

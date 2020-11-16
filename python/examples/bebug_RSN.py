@@ -16,7 +16,7 @@ import time
 toolbox_path = "/Users/alblle/allera_version_controlled_code/One_Dim_Mixture_Models/python/code"
 sys.path.append(os.path.join(os.path.abspath(toolbox_path))) 
 from Mixture_Model_1Dim import Mixture_Model_1Dim
-Inferences_possibilities=['Method of moments']#,'Maximum Likelihood','Variational Bayes']    
+Inferences_possibilities=['Variational Bayes'] #['Method of moments']#,'Maximum Likelihood','Variational Bayes']    
      
 
 
@@ -38,7 +38,7 @@ numVoxels=IC.shape[0]
 numICs=IC.shape[1]
 
 
-N_models=1 #GGG, GII
+N_models=2 #GGG, GII
 N_Inference_pos=len(Inferences_possibilities)
 
 
@@ -72,7 +72,7 @@ x=np.squeeze(np.divide(x-x.mean(),x.std()))
 # Gauss Gamma-Gamma
 Number_of_Components=3
 init_pi=np.divide(np.ones(Number_of_Components),Number_of_Components)
-Components_Model_types=[['Gauss','Gamma','-Gamma']] #Each component can be Gauss, Gamma, InvGamma, -Gamma, -InvGamma
+Components_Model_types=[['Gauss','Gamma','-Gamma'],['Gauss','InvGamma','-InvGamma']] #Each component can be Gauss, Gamma, InvGamma, -Gamma, -InvGamma
 
 
 

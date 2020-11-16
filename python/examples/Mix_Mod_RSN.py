@@ -50,10 +50,10 @@ Its=np.zeros([numICs,N_models,N_Inference_pos])
 
 
 #mixture options
-init_params=[0,1,4,2,-4,2]
+init_params=[0,1,5,2,-5,2]
 
-maxits=300
-tol=0.000001
+maxits=500
+tol=0.00000001
 
 
 #basis_dict={MixProp}
@@ -122,7 +122,7 @@ if 1:
                 print(Inference)
                 print(COST[icnumber,dist_type,inference_type])
                 print(MixProp[icnumber,dist_type,inference_type,:])
-                #print(Its[icnumber,dist_type,inference_type])
+                print(Its[icnumber,dist_type,inference_type])
                 #print(Threshold[icnumber,dist_type,inference_type,:])
     
             #	find classifiers threshodls

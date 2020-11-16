@@ -69,7 +69,7 @@ def init_ML(x,opts):
     #Exp_lik=np.zeros(maxiters+1)
 
     opts_MM=copy.deepcopy(opts)
-    opts_MM['maxits']=np.int(1)
+    #opts_MM['maxits']=np.int(1)
     Model = alb.Mix_Mod_MethodOfMoments(x, opts_MM)
     Exp_lik=Model['Likelihood']
     

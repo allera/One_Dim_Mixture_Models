@@ -165,9 +165,8 @@ while flag==0
     dum(dum==Inf)=10^-14;
     Exp_likel(it)=sum( sum( GenResp.*dum   ));
     dum2=repmat(tmpPI,1,size(probs,2)).*probs;
-    sd2=sum(dum2);sd2(sd2==0)=1;
-    lsd2=log(sd2);
-    Real_likel(it)=sum(lsd2);
+    
+    Real_likel(it)=sum(log(sum(dum2)));
     allparam(it,:,:)=estimated_parameters;
     allPi(it,:)=tmpPI;
     if it>2
