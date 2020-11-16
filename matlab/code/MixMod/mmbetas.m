@@ -94,9 +94,13 @@ GenResp (find(isnan(GenResp)))=10^-14;
 GenN=sum(GenResp,2);
 tmpPI=(GenN./sum(GenN))';%Gresp'/sum(Gresp');
 dum=log(repmat(tmpPI',1,size(probs,2)))+log(probs);
+dum(dum==-Inf)=10^-14;
+dum(dum==Inf)=10^-14;
 Exp_likel(1)=sum( sum( GenResp.*dum   ));
 dum2=repmat(tmpPI',1,size(probs,2)).*probs;
-Real_likel(1)=sum(log(sum(dum2)));
+sd2=sum(dum2);sd2(sd2==0)=1;sd2(sd2==Inf)=1;
+lsd2=log(sd2);
+Real_likel(1)=sum(lsd2);
 flag=0;
 it=2;
 
@@ -165,7 +169,7 @@ while flag==0
     dum(dum==Inf)=10^-14;
     Exp_likel(it)=sum( sum( GenResp.*dum   ));
     dum2=repmat(tmpPI,1,size(probs,2)).*probs;
-    sd2=sum(dum2);sd2(sd2==0)=1;
+    sd2=sum(dum2);sd2(sd2==0)=1;sd2(sd2==Inf)=1;
     lsd2=log(sd2);
     Real_likel(it)=sum(lsd2);
     allparam(it,:,:)=estimated_parameters;
